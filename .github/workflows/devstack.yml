@@ -1,0 +1,26 @@
+name: devstack
+
+on:
+  push:
+    branches:
+      - devstack
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Run devstack
+        run: |
+          git clone -b oceanbase https://github.com/whhe/devstack.git
+          mv local.conf devstack
+          cd devstack
+          sudo bash tools/create-stack-user.sh
+          sudo chown stack .
+          su - stack -c "FORCE=yes && bash stack.sh"
